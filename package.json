@@ -1,6 +1,6 @@
 {
   "name": "ip-info",
-  "version": "1.0.",
+  "version": "1.0.1",
   "description": "Obtenez des informations sur une IP",
   "main": "index.js",
   "scripts": {
