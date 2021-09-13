@@ -1,32 +1,32 @@
 {
-  "name": "ip-info",
-  "version": "1.0.1",
+  "name": "@johanstickman/ip-info",
+  "version": "2.0.0",
   "description": "Obtenez des informations sur une IP",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "bin": {
     "ipinfo": "./index.js",
     "ip-info": "./index.js"
   },
   "keywords": [
     "ip",
-    "cli",
-    "terminal"
+    "info",
+    "cli"
   ],
   "author": {
     "name": "Johan",
     "email": "contact.meniro@gmail.com",
-    "url": "https://johan-perso.glitch.me",
+    "url": "https://johanstickman.com",
     "twitter": "Johan_Stickman",
     "discord": "Johan#8021"
   },
   "license": "ISC",
   "dependencies": {
+    "boxen": "^5.1.0",
     "chalk": "^4.1.1",
     "meow": "^9.0.0",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "ora": "^5.4.1",
+    "update-notifier": "^5.1.0"
   },
   "repository": {
     "type": "git",
