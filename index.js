@@ -1,83 +1,108 @@
 #!/usr/bin/env node
 
-// Dépendences
-const fetch = require('node-fetch'); // https://www.npmjs.com/package/node-fetch
-const meow = require('meow'); // https://www.npmjs.com/package/meow
-const chalk = require('chalk'); // https://www.npmjs.com/package/chalk
+// Importer quelques modules
+const fetch = require('node-fetch');
+const chalk = require('chalk');
+const ora = require('ora'); const spinner = ora('');
+const updateNotifier = require('update-notifier');
+const boxen = require('boxen');
+const pkg = require('./package.json')
 
-// Utilisation de meow pour le CLI
-const cli = meow(`
-	Utilisation
-	  $ ipinfo
+// Système de mise à jour
+const notifierUpdate = updateNotifier({ pkg, updateCheckInterval: 10 });
 
-	Options
-	  --ip -i <IP>          IP (Si non fournis, utilise la votre)
-	  --version -v          Indique la version actuellement utilisé
-`, {
-	flags: {
-		ip: {
-			type: 'string',
-			alias: 'i'
-		},
-		version: {
-			type: 'boolean',
-			alias: 'v'
-		}
-	},
-	autoVersion: false
-});
+if (notifierUpdate.update && pkg.version !== notifierUpdate.update.latest){
+	// Afficher un message
+	console.log(boxen("Mise à jour disponible " + chalk.dim(pkg.version) + chalk.reset(" → ") + chalk.green(notifierUpdate.update.latest) + "\n" + chalk.cyan("npm i -g " + pkg.name) + " pour mettre à jour", {
+		padding: 1,
+		margin: 1,
+		align: 'center',
+		borderColor: 'yellow',
+		borderStyle: 'round'
+	}))
 
-// Donner la version avec l'option associé
-if(cli.flags.version){
-	console.log("Votre IP-Info utilise actuellement la version 1.0.0")
-	console.log("\nMettre à jour : " + chalk.cyan("https://github.com/johan-perso/IP-info"))
+	// Mettre une "notification" (bell)
+	console.log('\u0007');
+}
+// Option pour afficher la page d'aide
+if(process.argv.slice(2)[0] === "--help" || process.argv.slice(2)[0] === "-h") return console.log(`
+ Utilisation
+   $ ip-info
+
+ Options
+   --help -h                   Affiche cette liste
+   --version -v                Indique la version actuellement utilisé
+
+ Vérifier une IP
+   $ ip-info 245.187.59.93
+`)
+
+// Option pour afficher la version
+if(process.argv.slice(2)[0] === "--version" || process.argv.slice(2)[0] === "-v"){
+	console.log("Votre IP-Info utilise actuellement la version " + chalk.cyan(pkg.version))
+	console.log("\nGitHub : " + chalk.cyan("https://github.com/johan-perso/IP-info"))
 	return process.exit()
 }
 
-// Appeler la fonction avec certaine info
-if(cli.flags.ip) fetchinfo(cli.flags.ip)
-if(!cli.flags.ip) fetchip()
+// Appeler une des deux fonctions principal
+if(process.argv.slice(2)[0]) fetchIp(process.argv.slice(2)[0], false)
+if(!process.argv.slice(2)[0]) fetchMe()
 
-// Obtenir sa propre ip
-function fetchip(){
+// Obtenir sa propre IP
+async function fetchMe(){
 	// Dire qu'on récupère l'IP...
-	console.log("Récupération de votre IP...\n")
+	spinner.text = "Récupération de votre IP...\n" + chalk.dim("(Faites CTRL+C pour annuler)")
+	spinner.start()
 
-	// Récuperer l'IP
+	// Faire patienter trois secondes (au cas où tu fais la commande sans faire exprès t'as le time pour annuler)
+	await new Promise(r => setTimeout(r, 3000));
+
+	// Récuperer sa propre IP
     fetch('https://api.ipify.org?format=raw')
     .then(res => res.text())
-    .then(data => fetchinfo(data))
+    .then(data => {
+		spinner.text = "Récupération de votre IP"
+		spinner.stop()
+
+		fetchIp(data, true)
+	})
 	.catch(err => {
-		// En cas d'erreur
-		if(err.code === "ENOTFOUND") return console.log(chalk.red("Erreur de réseau / de l'API (ipify.org)...")) && process.exit()
-		console.log(chalk.red("Une erreur inconnu s'est produite.. : " + err)) && process.exit()
+		spinner.text = chalk.red("Erreur inconnue : ") + chalk.dim(err.toString().replace("FetchError: ","").replace("https://api.ipify.org/?format=raw"),"ipify")
+		spinner.fail()
+
+		process.exit()
 	})
 }
 
 // Obtenir des informations sur une IP
-async function fetchinfo(ip){
+async function fetchIp(ip, me){
 	// Vérifier si l'IP est "valide"
-	if(ip.includes("a"||"b"||"c"||"d"||"e"||"f"||"g"||"h"||"i"||"j"||"k"||"l"||"m"||"n"||"o"||"p"||"q"||"r"||"s"||"t"||"u"||"w"||"x"||"y"||"z")) return console.log(chalk.red("IP invalide : " + ip)) && process.exit()
-	if(ip === "") return console.log(chalk.red("IP invalide...")) && process.exit()
-	if(ip.replace(/\\n/g, "").replace(/ /g, "") === "") return console.log(chalk.red("IP invalide..")) && process.exit()
+	if(!ip.match(/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/)) return console.log(chalk.red("L'IP n'est pas reconnu en tant qu'IP...")) && process.exit()
+	if(!ip.replace(/\\n/g, "").replace(/ /g, "")) return console.log(chalk.red("Aucune IP trouvé")) && process.exit()
 
-	// Donner l'IP
-	console.log("IP : " + chalk.cyan(ip.replace(/\\n/g, "").replace(/ /g, "")))
-	// Récuperer des informations
-	var json = await fetch("http://api.ipstack.com/" + ip.replace(/\\n/g, "").replace(/ /g, "") + "?access_key=45c56bdfb6dc40bd27e69e61b7287839", { method: 'GET', follow: 20, size: 500000000})
+	// Dire qu'on récupère des informations
+	spinner.text = "Récupération d'informations\n" + chalk.dim("(Faites CTRL+C pour annuler)")
+	spinner.start()
+
+	// Récuperer des informations sur l'IP
+	var ipInfo = await fetch("http://api.ipstack.com/" + ip.replace(/\\n/g, "").replace(/ /g, "") + "?access_key=45c56bdfb6dc40bd27e69e61b7287839", { method: 'GET', follow: 20, size: 500000000})
 	.then(res => res.json())
-	.catch(err => {
-		// En cas d'erreur
-		if(err.code === "ENOTFOUND") return console.log(chalk.red("Erreur de réseau / de l'API (ipstack.com)...")) && process.exit()
-		console.log(chalk.red("Une erreur inconnu s'est produite.. : " + err)) && process.exit()
-	})
+	.catch(err => { spinner.text = chalk.red("Erreur inconnue : ") + chalk.dim(err) && spinner.fail() && process.exit() })
 
-	// Regarder pour des erreurs
-	if(json && json.success === false) return console.log(chalk.red("L'API a renvoyé une erreur... : " + json.error.info.replace(" [Technical Support: support@apilayer.com]",""))) && process.exit()
+	// Arrêter le spinner
+    spinner.text = "Récupération de votre IP" && spinner.stop()
+
+	// Afficher l'IP
+	if(me) console.log(chalk.bold('Votre IP : ' + chalk.cyan(ip.replace(/\\n/g, "").replace(/ /g, ""))) + "\n")
+	if(!me) console.log(chalk.bold('IP : ' + chalk.cyan(ip.replace(/\\n/g, "").replace(/ /g, ""))) + "\n")
+
+	// Vérifier si aucune erreur n'a été trouvé
+	if(ipInfo && ipInfo.success === false) return console.log(chalk.red("L'API a renvoyé une erreur... : " + ipInfo.error.info.replace(" [Technical Support: support@apilayer.com]",""))) && process.exit()
+	if(ipInfo && ipInfo.city === null) return console.log(chalk.red("Aucune information n'a été trouvé")) && process.exit()
 
 	// Donner d'autres informations
-	if(json) console.log("Type : " + chalk.cyan(json.type))
-	if(json) console.log("Adresse : " + chalk.cyan(`${json.zip} ${json.city}, ${json.region_name} (${json.region_code}), ${json.country_name} (${json.location.country_flag_emoji}), ${json.continent_name} (${json.continent_code})`))
-	if(json) console.log("Adresse Google Maps : " + chalk.cyan("https://www.google.com/maps/@" + json.latitude + "," + json.longitude + ",200m/data=!3m1!1e3"))
-	if(json) console.log("Language : " + chalk.cyan(json.location.languages[0].native + " (" + json.location.languages[0].code + ")"))
+	console.log("Type : " + chalk.cyan(ipInfo.type.replace("ipv4","IPv4").replace("ipv6","IPv6")))
+	console.log("Adresse : " + chalk.cyan(`${ipInfo.zip} ${ipInfo.city} (${ipInfo.region_name}), ${ipInfo.country_name} (${ipInfo.location.country_flag_emoji}), ${ipInfo.continent_name} (${ipInfo.continent_code})`))
+	console.log("Adresse Google Maps : " + chalk.cyan("https://www.google.com/maps/@" + ipInfo.latitude + "," + ipInfo.longitude + ",200m/data=!3m1!1e3"))
+	console.log("Language : " + chalk.cyan(ipInfo.location.languages[0].native + " (" + ipInfo.location.languages[0].code + ")"))
 }
