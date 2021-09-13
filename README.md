@@ -1,44 +1,37 @@
 ## IP-Info
 
-IP-Info est un CLI qui vous donne des informations sur une adresse IP : Si l'IP est une ipv4 ou ipv6, une adresse aproximatif, un lien Google Maps de cette adresse et la langue parlé dans le pays.
+[![asciicast](https://firebasestorage.googleapis.com/v0/b/storage-bf183.appspot.com/o/otherImages%2FIP-Info_2.0.0.gif?alt=media)](https://asciinema.org/a/EG3LnyWcHQcPidXCNAptcP4aH)
+
+IP-Info est un CLI qui vous donne des informations sur une adresse IP : Si l'IP est une IPv4 ou IPv6, une adresse aproximatif (ainsi qu'un lien Google Maps vers cette adresse) et la langue parlé dans le pays.
 
 
 ## Prérequis
 
-* Un appareil sous Windows, MacOS, Linux ou ChromeOS (avec Crostini)
+* Un appareil sous Windows, macOS, Linux ou ChromeOS (avec Crostini)
 * [nodejs et npm](https://nodejs.org) d'installé
 
 
 ## Installation
 
-Suis ces étapes dans l'ordre.. tout simplement :
-
-* Télécharger tous les fichiers néecésaire (index.js, package.json, etc)
-* Ouvrir un terminal et aller dans le dossier où se trouve les fichiers téléchargé lors de la dernière étape.
-* Faire quelques commandes...
 ```
-$ npm i
-.........
-$ npm link
+$ (sudo) npm install --global @johanstickman/ip-info
 ```
 
 
 ## Utilisation
 
 ```
-$ ipinfo --help
+$ ipinfo 185.199.108.153
 
-  Obtenez des informations sur une IP
-  
-  Utilisation
-    $ ipinfo
-  
-  Options
-    --ip -i <IP>          IP (Si non fournis, utilise la votre)
-    --version -v          Indique la version actuellement utilisé
+    IP : 185.199.108.153
+
+    Type : IPv4
+    Adresse : 94107 San Francisco (California), United States (🇺🇸), North America (NA)
+    Adresse Google Maps : https://www.google.com/maps/@37.76784896850586,-122.39286041259766,200m/data=!3m1!1e3
+    Language : English (en)
 ```
 
 
 ## Licence
 
-ISC © [Johan](https://johan-perso.glitch.me)
+ISC © [Johan](https://johanstickman.com)
