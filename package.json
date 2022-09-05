@@ -1,6 +1,6 @@
 {
   "name": "@johanstickman/ip-info",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Obtenez des informations sur une IP",
   "main": "index.js",
   "bin": {
@@ -14,8 +14,8 @@
   ],
   "author": {
     "name": "Johan",
-    "email": "contact.meniro@gmail.com",
-    "url": "https://johanstickman.com",
+    "email": "johan_stickman@proton.me",
+    "url": "https://johanstick.me",
     "twitter": "Johan_Stickman",
     "discord": "Johan#8021"
   },
