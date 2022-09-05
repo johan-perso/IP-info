@@ -34,4 +34,4 @@ $ ipinfo 185.199.108.153
 
 ## Licence
 
-ISC © [Johan](https://johanstickman.com)
+ISC © [Johan](https://johanstick.me)
